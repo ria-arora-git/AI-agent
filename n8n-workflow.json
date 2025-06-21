@@ -1,0 +1,163 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e24d5ee5-af76-40cc-a276-a1204c81f7fd",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        20
+      ],
+      "id": "be4331e9-abb6-402c-af33-0419b0b9f245",
+      "name": "Webhook",
+      "webhookId": "e24d5ee5-af76-40cc-a276-a1204c81f7fd"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        860
+      ],
+      "id": "174c19ad-521f-438c-9b7c-929aa087acc6",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1j7RHTOS1W0l3pMR0_y5WCUQeAYTCE3zlzTGjO4rYV90",
+          "mode": "list",
+          "cachedResultName": "Raw_Attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j7RHTOS1W0l3pMR0_y5WCUQeAYTCE3zlzTGjO4rYV90/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j7RHTOS1W0l3pMR0_y5WCUQeAYTCE3zlzTGjO4rYV90/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Date",
+              "lookupValue": "={{ $now.toLocaleDateString(\"en-IN\") }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        420,
+        0
+      ],
+      "id": "51a1d982-7dfc-4f7d-bcc9-4d336192fd20",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "nkuTw0rSBY1P1M4h",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $json.query?.toLowerCase() || \"\";\nconst rows = items;\n\n// Try to find a matching name\nlet matchedName = null;\n\nfor (let row of rows) {\n  const name = row.json.Name?.toLowerCase().trim();\n  if (query.includes(name)) {\n    matchedName = row.json;\n    break;\n  }\n}\n\nlet response = \"Sorry, I couldn’t find that person in today's attendance.\";\n\nif (matchedName) {\n  response = `${matchedName.Name} was marked as ${matchedName.Status} today.`;\n}\n\nreturn [\n  {\n    json: {\n      message: response\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ],
+      "id": "a88eef87-6710-4696-867b-ec9beac28294",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.message }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        800,
+        120
+      ],
+      "id": "7e7960d9-48ec-4154-bb54-196e40d3c892",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b6f9cef9-5d20-44fb-8302-341230b9c3f5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7cb2c8e48dcbc979515afe12e96ef2d647fe28eb9c81787f0afaffb4afc1910c"
+  },
+  "id": "OSSh4RzKP5r67sH2",
+  "tags": []
+}
